@@ -510,16 +510,11 @@
       }
 
       .testimonial-box {
-        display: none;
         margin-top: 16px;
         padding: 18px;
         border-radius: var(--radius-lg);
         background: var(--color-bg-elevated);
         border: 1px dashed var(--color-border-strong);
-      }
-
-      .testimonial-box.is-visible {
-        display: block;
       }
 
       .checkbox {
@@ -975,28 +970,20 @@
             <div>
               <h2 class="panel-title">Témoignage</h2>
               <p class="panel-copy">
-                Si vous le souhaitez, nous pouvons aussi recueillir un mot que
-                nous pourrions valoriser publiquement.
+                Laissez quelques mots sur votre expérience. Si vous nous en donnez
+                l'autorisation, ce témoignage pourra aussi être valorisé publiquement.
               </p>
             </div>
           </div>
-          <fieldset class="group-fieldset">
-            <legend class="group-legend">Souhaitez-vous laisser un témoignage ?</legend>
-            <div class="input-tiles">
-              <div class="option compact"><input id="testimonial-yes" type="radio" name="testimonial_optin" value="Oui" /><label for="testimonial-yes">Oui</label></div>
-              <div class="option compact"><input id="testimonial-no" type="radio" name="testimonial_optin" value="Non" /><label for="testimonial-no">Non</label></div>
-            </div>
-          </fieldset>
-
-          <div class="testimonial-box" id="testimonial-box" aria-hidden="true">
+          <div class="testimonial-box" id="testimonial-box" aria-hidden="false">
             <div class="field">
               <label for="testimonial-text">Votre témoignage</label>
-              <textarea class="text-area" id="testimonial-text" name="testimonial_text" placeholder="Quelques lignes sur l'expérience, le professionnalisme de l'équipe ou l'impact de l'interview."></textarea>
+              <textarea class="text-area" id="testimonial-text" name="testimonial_text" placeholder="Quelques lignes sur l'expérience, le professionnalisme de l'équipe ou l'impact de l'interview." required></textarea>
             </div>
             <div class="split">
               <div class="field">
                 <label for="identity">Nom, prénom ou projet</label>
-                <input class="text-input" id="identity" name="identity" type="text" placeholder="Ex : Claire Martin, fondatrice de..." />
+                <input class="text-input" id="identity" name="identity" type="text" placeholder="Ex : Claire Martin, fondatrice de..." required />
               </div>
               <div class="field">
                 <label for="role-format">Format réalisé</label>
@@ -1037,15 +1024,11 @@
       const submitButton = form.querySelector("button[type='submit']");
       const completionPill = document.getElementById("completion-pill");
       const testimonialBox = document.getElementById("testimonial-box");
-      const testimonialYes = document.getElementById("testimonial-yes");
-      const testimonialNo = document.getElementById("testimonial-no");
-      const testimonialControls = testimonialBox.querySelectorAll("input, textarea");
       const trackedGroups = [
         "global_rating",
         "value_rating",
         "impact_level",
-        "recommendation",
-        "testimonial_optin"
+        "recommendation"
       ];
 
       function updateProgress() {
@@ -1060,17 +1043,6 @@
         confirmation.classList.toggle("is-error", isError);
       }
 
-      function syncTestimonialVisibility() {
-        const isVisible = testimonialYes.checked;
-        testimonialBox.classList.toggle("is-visible", isVisible);
-        testimonialBox.setAttribute("aria-hidden", String(!isVisible));
-        testimonialControls.forEach((control) => {
-          control.disabled = !isVisible;
-        });
-      }
-
-      testimonialYes.addEventListener("change", syncTestimonialVisibility);
-      testimonialNo.addEventListener("change", syncTestimonialVisibility);
       form.querySelectorAll("input[type='radio']").forEach((input) => {
         input.addEventListener("change", updateProgress);
       });
@@ -1088,6 +1060,17 @@
 
           if (!form.querySelector("input[name='global_rating']:checked")) {
             throw new Error("Merci de renseigner votre évaluation globale avant l'envoi.");
+          }
+
+          const testimonialText = document.getElementById("testimonial-text").value.trim();
+          const identity = document.getElementById("identity").value.trim();
+
+          if (!testimonialText) {
+            throw new Error("Merci de renseigner votre témoignage.");
+          }
+
+          if (!identity) {
+            throw new Error("Merci d'indiquer votre nom, prénom ou projet pour le témoignage.");
           }
 
           const response = await fetch(form.action, {
@@ -1115,7 +1098,6 @@
           );
           form.reset();
           updateProgress();
-          syncTestimonialVisibility();
         } catch (error) {
           showConfirmation(error.message || "Une erreur est survenue lors de l'envoi du formulaire.", true);
         } finally {
@@ -1126,7 +1108,6 @@
       });
 
       updateProgress();
-      syncTestimonialVisibility();
     </script>
   </body>
 </html>
