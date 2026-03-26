@@ -365,6 +365,14 @@
         margin-top: 16px;
       }
 
+      .honeypot {
+        position: absolute;
+        left: -9999px;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+      }
+
       .group-fieldset {
         margin: 0;
         padding: 0;
@@ -602,6 +610,13 @@
         color: #dc2626;
       }
 
+      .privacy-note {
+        color: rgba(255, 255, 255, 0.74);
+        font-size: var(--fs-body-sm);
+        line-height: 1.7;
+        max-width: 44rem;
+      }
+
       @media (min-width: 760px) {
         .page-shell {
           padding-top: 34px;
@@ -697,6 +712,10 @@
         novalidate
       >
         <input type="hidden" name="_subject" value="Nouveau retour client FWI Ambition" />
+        <div class="honeypot" aria-hidden="true">
+          <label for="company-website">Ne pas remplir ce champ</label>
+          <input id="company-website" type="text" name="_gotcha" tabindex="-1" autocomplete="off" />
+        </div>
         <section class="panel">
           <div class="panel-header">
             <div>
@@ -997,6 +1016,10 @@
             Nous lisons chaque réponse avec attention pour faire évoluer
             l'expérience, du premier échange jusqu'à la livraison finale.
           </p>
+          <p class="privacy-note">
+            Vos réponses sont utilisées uniquement dans le cadre de l'amélioration de l'expérience FWI Ambition.
+            Les informations transmises restent confidentielles et ne sont diffusées qu'avec votre accord explicite.
+          </p>
           <div class="actions">
             <div>Une fois envoyé, votre retour reste simple, confidentiel et utile.</div>
             <button class="button" type="submit">Envoyer mon retour</button>
@@ -1061,6 +1084,10 @@
         try {
           if (form.action.includes("YOUR_FORM_ID")) {
             throw new Error("Remplacez d'abord YOUR_FORM_ID par votre identifiant Formspree.");
+          }
+
+          if (!form.querySelector("input[name='global_rating']:checked")) {
+            throw new Error("Merci de renseigner votre évaluation globale avant l'envoi.");
           }
 
           const response = await fetch(form.action, {
