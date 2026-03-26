@@ -690,7 +690,13 @@
         </p>
       </section>
 
-      <form id="feedback-form" novalidate>
+      <form
+        id="feedback-form"
+        action="https://formspree.io/f/fwiambition@gmail.com"
+        method="POST"
+        novalidate
+      >
+        <input type="hidden" name="_subject" value="Nouveau retour client FWI Ambition" />
         <section class="panel">
           <div class="panel-header">
             <div>
@@ -1031,38 +1037,6 @@
         confirmation.classList.toggle("is-error", isError);
       }
 
-      function serializeForm() {
-        const formData = new FormData(form);
-        return {
-          global_rating: formData.get("global_rating") || "",
-          step_contact: formData.get("step_contact") || "",
-          contact_comment: formData.get("contact_comment") || "",
-          step_clarity: formData.get("step_clarity") || "",
-          clarity_comment: formData.get("clarity_comment") || "",
-          step_organization: formData.get("step_organization") || "",
-          organization_comment: formData.get("organization_comment") || "",
-          step_shoot: formData.get("step_shoot") || "",
-          shoot_comment: formData.get("shoot_comment") || "",
-          step_quality: formData.get("step_quality") || "",
-          quality_comment: formData.get("quality_comment") || "",
-          step_delivery: formData.get("step_delivery") || "",
-          delivery_comment: formData.get("delivery_comment") || "",
-          strengths: formData.get("strengths") || "",
-          improvements: formData.get("improvements") || "",
-          value_rating: formData.get("value_rating") || "",
-          value_comment: formData.get("value_comment") || "",
-          impact_level: formData.get("impact_level") || "",
-          impact_details: formData.get("impact_details") || "",
-          recommendation: formData.get("recommendation") || "",
-          recommend_why: formData.get("recommend_why") || "",
-          testimonial_optin: formData.get("testimonial_optin") || "",
-          testimonial_text: formData.get("testimonial_text") || "",
-          identity: formData.get("identity") || "",
-          format_type: formData.get("format_type") || "",
-          broadcast_approval: formData.get("broadcast_approval") === "on"
-        };
-      }
-
       function syncTestimonialVisibility() {
         const isVisible = testimonialYes.checked;
         testimonialBox.classList.toggle("is-visible", isVisible);
@@ -1085,21 +1059,33 @@
         confirmation.classList.remove("is-visible", "is-error");
 
         try {
-          const response = await fetch("/api/feedback", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify(serializeForm())
-          });
-
-          const result = await response.json();
-
-          if (!response.ok) {
-            throw new Error(result.message || "Une erreur est survenue.");
+          if (form.action.includes("YOUR_FORM_ID")) {
+            throw new Error("Remplacez d'abord YOUR_FORM_ID par votre identifiant Formspree.");
           }
 
-          showConfirmation(result.message, false);
+          const response = await fetch(form.action, {
+            method: form.method,
+            headers: {
+              Accept: "application/json"
+            },
+            body: new FormData(form)
+          });
+
+          const result = await response.json().catch(() => ({}));
+
+          if (!response.ok) {
+            const message = Array.isArray(result.errors)
+              ? result.errors.map((item) => item.message).join(", ")
+              : result.message;
+            throw new Error(message || "Une erreur est survenue.");
+          }
+
+          showConfirmation(
+            result.next
+              ? "Votre réponse a bien été envoyée. Merci pour votre confiance."
+              : "Votre réponse a bien été envoyée. Merci pour votre confiance.",
+            false
+          );
           form.reset();
           updateProgress();
           syncTestimonialVisibility();
